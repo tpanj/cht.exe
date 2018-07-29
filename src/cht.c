@@ -12,7 +12,7 @@
 
 #define DEFAULT_SERVER "cht.sh/"
 
-#define VERSION "0.2"
+#define VERSION "0.3"
 
 enum state_machine {
   NORMAL_PRINTABLE_CHAR,
@@ -155,14 +155,13 @@ int main(int argc, char *argv[])
   if(argc <2) {
     fprintf(stderr, "Usage: %s URL\n", argv[0]);
     fprintf(stderr, "  without http:// or file:// scheme using cht.sh server\n");
-    fprintf(stderr, "  -d parameter after URL to not to use coloring at all\n");
     fprintf(stderr, "\n");
-    fprintf(stderr, "  (c) Tadej Panjtar, version: \n" VERSION);
+    fprintf(stderr, "  (c) Tadej Panjtar, version: " VERSION "\n");
     return EXIT_FAILURE;
   }
   
   // last parameter is for disabling coloring globally
-  if (!strcmp("-d", argv[argc-1])) {
+  if (!strcmp("-T", argv[argc-1])) {
       mode = 0;
   }
   
