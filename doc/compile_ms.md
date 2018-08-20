@@ -17,14 +17,14 @@ Prerequisites for build environment (mine is VM with Windown XP guest)
     1. Continue with variants bellow 2a or 2b
 
 # 2a. With CMake (for release)
-    C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -DCMAKE_BUILD_TYPE=MinSizeRel -G "NMake Makefiles"
+    C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=MinSizeRel -G "NMake Makefiles"
     C:\SDKS\curl>nmake libcurl
 
 # 2b. With VS
-1. C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -G "Visual Studio 9 2008" .
-1. (C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -G "Visual Studio 10 2010" .)
+1. C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 9 2008" .
+1. (C:\SDKS\curl>cmake -DCURL_STATICLIB=ON -DBUILD_SHARED_LIBS=OFF -G "Visual Studio 10 2010" .)
 1. Open ALL_BUILD.vcxproj in Visual Studio
-1. Right click on project "libxurl" and select "Set as StartUp Project"
+1. Right click on project "libcurl" and select "Set as StartUp Project"
 1. From Build type select MinSizeRel
 1. Build libcurl from menu "Build"
 1. In output you should find Build: # succeeded string and above that location of lib to remember: `C:\SDKS\curl\lib\MinSizeRel\libcurl.lib`
@@ -40,7 +40,8 @@ Prerequisites for build environment (mine is VM with Windown XP guest)
 1. Create empty console app in VS
 1. Add files cht.c and rlutil.h. Add additioal directory include `C:\SDKS\curl\include` by right rigth clicking on project, Properties. Both showned on picture.
 ![ps](vs_urllib_setup1.png)
-1. Linking will failt if you build project now. You should setup linker with both: Additional Dependencies
+1. Linking will failt if you build project now. You should setup linker with both: Additional Dependencies: "ws2_32.lib wldap32.lib"
 ![ps](vs_urllib_setup2.png)
-1. and Preprocessor Definitions set.
+1. and Preprocessor Definitions set: "CURL_STATICLIB"
 ![ps](vs_urllib_setup3.png)
+If error about LIBCMT.lib appears, change Project + Properties, C/C++, Code Generation, Runtime Library. Set as "/MT". **But this only show problem with step 2a, use step 2b instead**. Better to leave it /MD. Amd give more RAM to VM.
