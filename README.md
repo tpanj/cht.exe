@@ -6,7 +6,7 @@ See [Motivation](doc/motivation.md) for reasons this software esists.
 
 # Installation
 
-Just copy [downloaded](https://github.com/TadejPanjtar/cht/raw/master/bin/cht.exe) cht.exe to some of your %PATH% dir to use it from every console.
+Just copy [downloaded](https://github.com/tpanj/cht.exe/raw/master/bin/cht.exe) cht.exe to some of your %PATH% dir to use it from every console.
 
 e.g.: copy cht.exe c:\windows\system32 (but you need privileges)
 
