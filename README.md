@@ -60,6 +60,9 @@ cmake -DCMAKE_BUILD_TYPE=Release ../src
 make
 sudo cp ./cht /usr/local/bin/ # "install" it
 ```
+## External sources
+* https://github.com/tapio/rlutil for cross platform console coloring
+* https://github.com/Malvineous/cfgpath for managing config files
 ------------------
 
 # TODO:
