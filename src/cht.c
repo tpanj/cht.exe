@@ -8,11 +8,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include "rlutil.h"
+#define OPTPARSE_IMPLEMENTATION
+#define OPTPARSE_API static
+#include "optparse.h"
 #include <curl/curl.h>
 
-#define DEFAULT_SERVER "cht.sh/"
+#define DEFAULT_SERVER "cheat.sh"
 
-#define VERSION "0.3"
+#define VERSION "0.4"
 
 enum state_machine {
   NORMAL_PRINTABLE_CHAR,
@@ -31,6 +34,7 @@ struct MemoryStruct {
 
 char escape[13];
 short mode = 1; // if mode == 0 do not use colors at all
+short qmode = 0; // 1: query mode 2: help mode
 
 int change_color()
 {
@@ -142,29 +146,92 @@ int strCmp(const char* s1, const char* s2)
     return *(const unsigned char*)s1 - *(const unsigned char*)s2;
 }
 
+void print_usage(f, util_name, srv)
+#ifdef WIN32
+  FILE *f;
+#else
+  struct _IO_FILE *f;
+#endif
+  char *util_name;
+  char *srv;
+{
+    fprintf(f, "\nUsage: %s  [options...] <URL>\n(", util_name);
+    fprintf(f, "  without http:// or file:// scheme using %s server)\n", srv);
+    fprintf(f, "Options:\n");
+    fprintf(f, " -Q, --query       space delimetered arguments are parts of query\n");
+    fprintf(f, " -T, --no_colors   disabling coloring globally\n");
+    fprintf(f, "\n");
+}
 
 int main(int argc, char *argv[])
 {
+  struct optparse_long longopts[] = {
+      {"query",       'Q', OPTPARSE_NONE},
+      {"no_colors",   'T', OPTPARSE_NONE},
+      {"version",     'v', OPTPARSE_NONE},
+      {0}
+  };
+  char *arg;
+  int option;
+  struct optparse options;
+    
   CURL *curl_handle;
   CURLcode res;
-  char * fullUrlStr;
-
+  char *fullUrlStr;
+  char *server;
+  char *query;
+  int word_count;
+  
   struct MemoryStruct chunk;
 
-  // not enough parameters
+  server = malloc(111);
+  query  = malloc(256);
+  strcpy(server, DEFAULT_SERVER);
+
+  /* not enough parameters */
   if(argc <2) {
-    fprintf(stderr, "Usage: %s URL\n", argv[0]);
-    fprintf(stderr, "  without http:// or file:// scheme using cht.sh server\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  (c) Tadej Panjtar, version: " VERSION "\n");
+    print_usage(stderr, argv[0], server);
     return EXIT_FAILURE;
   }
   
-  // last parameter is for disabling coloring globally
-  if (!strcmp("-T", argv[argc-1])) {
-      mode = 0;
+  optparse_init(&options, argv);
+  while ((option = optparse_long(&options, longopts, NULL)) != -1) {
+      switch (option) {
+      case 'v':
+          fprintf(stderr, "  %s version: " VERSION "      (c) Tadej Panjtar\n", argv[0]);
+          exit(0);
+          break;
+      case 'T': /* for disabling coloring globally */
+          mode = 0;
+          break;
+      case 'Q': /* query mode */
+          qmode = 1;
+          break;
+      case 'h':
+      case '?':
+          print_usage(stdout, argv[0], server);
+          qmode = 2;
+          break;
+      }
   }
-  
+
+  if (2==qmode) {
+    strcpy(query, ":help");
+  }
+  else if (1==qmode) {
+    word_count = 0;
+    strcpy(query, "/");
+    while ((arg = optparse_arg(&options))) { 
+      strcat(query, arg);
+      if (0==word_count++)
+        strcat(query, "/");
+      else
+        strcat(query, "+");
+    }
+    query[strlen(query)-1]=0; /* delete last "+" */
+  }
+  else strcpy(query, optparse_arg(&options));
+
   chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
   chunk.size = 0;    /* no data at this point */
 
@@ -174,12 +241,13 @@ int main(int argc, char *argv[])
   curl_handle = curl_easy_init();
   
   /* specify URL to get */
-  if (0==strCmp("http://", argv[1]) || 0==strCmp("file://", argv[1]))
-      curl_easy_setopt(curl_handle, CURLOPT_URL, argv[1]);
+  if (0==strCmp("http://", query) || 0==strCmp("file://", query))
+      curl_easy_setopt(curl_handle, CURLOPT_URL, query);
   else {
-      fullUrlStr = malloc(strlen(argv[1]) + sizeof DEFAULT_SERVER);
-      strcpy(fullUrlStr, DEFAULT_SERVER);
-      strcat(fullUrlStr, argv[1]);
+      fullUrlStr = malloc(strlen(query) + sizeof server + 1);
+      strcpy(fullUrlStr, server);
+      strcat(fullUrlStr, "/");
+      strcat(fullUrlStr, query);
       curl_easy_setopt(curl_handle, CURLOPT_URL, fullUrlStr);
   }
 
