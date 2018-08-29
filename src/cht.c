@@ -1,5 +1,3 @@
-// assuming download txt file does not include other escape characters
-// Started from https://curl.haxx.se/libcurl/c/getinmemory.html
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
 #endif
@@ -11,18 +9,20 @@
 #define OPTPARSE_IMPLEMENTATION
 #define OPTPARSE_API static
 #include "optparse.h"
+#include "cfgpath.h"
+#include "simple_config.h"
 #include <curl/curl.h>
 
 #define DEFAULT_SERVER "cheat.sh"
 
-#define VERSION "0.4"
+#define VERSION "0.5"
 
 enum state_machine {
   NORMAL_PRINTABLE_CHAR,
-    BEGIN_ESCAPE_SEQ_CHAR1, // <esc>
-    BEGIN_ESCAPE_SEQ_CHAR2, // [
-  ESCAPE_SEQ,               // <something between that goes to escape
-    END_ESCAPE_SEQ_CHAR,    // m
+    BEGIN_ESCAPE_SEQ_CHAR1, /* <esc> */
+    BEGIN_ESCAPE_SEQ_CHAR2, /* [ */
+  ESCAPE_SEQ,               /* <something between that goes to escape */
+    END_ESCAPE_SEQ_CHAR    /* m */
 };
 
 struct MemoryStruct {
@@ -33,20 +33,20 @@ struct MemoryStruct {
 };
 
 char escape[13];
-short mode = 1; // if mode == 0 do not use colors at all
-short qmode = 0; // 1: query mode 2: help mode
+short mode = 1; /* if mode == 0 do not use colors at all */
+short qmode = 0; /* 1: query mode 2: help mode */
 
 int change_color()
 {
-    if (!strcmp((const char*)escape, "[39"))                return CYAN;         // 
-    if (!strcmp((const char*)escape, "[38;5;252"))          return WHITE;        // 
-    if (!strcmp((const char*)escape, "[38;5;31"))           return LIGHTCYAN;    // 
-    if (!strcmp((const char*)escape, "[38;5;70;01"))        return LIGHTGREEN;   // keyword
-    if (!strcmp((const char*)escape, "[38;5;246"))          return DARKGREY;     // comment
-    if (!strcmp((const char*)escape, "[38;5;214"))          return YELLOW;       // string
-    if (!strcmp((const char*)escape, "[38;5;67"))           return LIGHTMAGENTA; // number 
-    if (!strcmp((const char*)escape, "[38;5;68"))           return LIGHTCYAN;    // function names
-    return CYAN; // default color
+    if (!strcmp((const char*)escape, "[39"))                return CYAN;         /*  */
+    if (!strcmp((const char*)escape, "[38;5;252"))          return WHITE;        /*  */
+    if (!strcmp((const char*)escape, "[38;5;31"))           return LIGHTCYAN;    /*  */
+    if (!strcmp((const char*)escape, "[38;5;70;01"))        return LIGHTGREEN;   /* keyword */
+    if (!strcmp((const char*)escape, "[38;5;246"))          return DARKGREY;     /* comment */
+    if (!strcmp((const char*)escape, "[38;5;214"))          return YELLOW;       /* string */
+    if (!strcmp((const char*)escape, "[38;5;67"))           return LIGHTMAGENTA; /* number  */
+    if (!strcmp((const char*)escape, "[38;5;68"))           return LIGHTCYAN;    /* function names */
+    return CYAN; /* default color */
 
 /**
  * Enums: Color codes
@@ -71,9 +71,9 @@ int change_color()
 
 }
 
-// handling states and printing to stdout BEGIN
+/* handling states and printing to stdout BEGIN */
 
-void print_char(const char c, short *cs) // and changing current state
+void print_char(const char c, short *cs) /* and changing current state */
 {
     short len;
     
@@ -89,7 +89,7 @@ void print_char(const char c, short *cs) // and changing current state
     
       /* actions */
     if (NORMAL_PRINTABLE_CHAR == *cs)
-        putchar(c); // print only notspecial chars
+        putchar(c); /* print only notspecial chars */
     if (ESCAPE_SEQ == *cs) {
         len = strlen(escape);
         escape[len] =c; len++;
@@ -107,14 +107,14 @@ void perform_parse_and_coloring(struct MemoryStruct *doc)
         print_char(c, &(doc->state));
             if (END_ESCAPE_SEQ_CHAR == doc->state) 
             {
-                // fprintf(stderr,"%s\n", escape); 
+                /* fprintf(stderr,"%s\n", escape); */
                 if (mode) setColor(change_color());
                 doc->state = NORMAL_PRINTABLE_CHAR;
             }
     }
 }
 
-// handling states and printing to stdout END
+/* handling states and printing to stdout END */
 
 static size_t
 WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
@@ -136,13 +136,13 @@ WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
   return realsize;
 }
 
-// modified strcmp to work only till end of str1
+/* modified strcmp to work only till end of str1 */
 int strCmp(const char* s1, const char* s2)
 {
     while(*s1 == *s2) {
         s1++; s2++;
     }
-    if (0==*s1) return 0; // end of str1
+    if (0==*s1) return 0; /* end of str1 */
     return *(const unsigned char*)s1 - *(const unsigned char*)s2;
 }
 
@@ -184,9 +184,33 @@ int main(int argc, char *argv[])
   
   struct MemoryStruct chunk;
 
+  char cfgfile[262];
+  char* host;
+  int port = 0;
+  char *filePath;
+
   server = malloc(111);
   query  = malloc(256);
-  strcpy(server, DEFAULT_SERVER);
+
+  get_user_config_file(cfgfile, sizeof(cfgfile), DEFAULT_SERVER);
+  if (cfgfile[0] == 0) {
+      fprintf(stderr, "Unable to find home directory.\n");
+      return 1;
+  }
+
+  filePath=cfgfile;
+  SCcfg=SCparseConf(filePath);
+  host=SCgetValue(SCcfg,"CHTSH_URL");
+  if (host) {
+      strcpy(server, host);
+  }
+  else {
+      strcpy(server, DEFAULT_SERVER);
+  }
+  SCfreeCfg(SCcfg);
+#ifdef DEBUG
+  printf("Opening configuration file: %s\n", cfgfile);
+#endif
 
   /* not enough parameters */
   if(argc <2) {
@@ -230,7 +254,11 @@ int main(int argc, char *argv[])
     }
     query[strlen(query)-1]=0; /* delete last "+" */
   }
-  else strcpy(query, optparse_arg(&options));
+  else {
+      arg = optparse_arg(&options);
+      strcpy(query, arg);
+      strcat(query, "//"); /* strange, but this works for two letters quotes */
+  }
 
   chunk.memory = malloc(1);  /* will be grown as needed by the realloc above */
   chunk.size = 0;    /* no data at this point */
@@ -244,11 +272,14 @@ int main(int argc, char *argv[])
   if (0==strCmp("http://", query) || 0==strCmp("file://", query))
       curl_easy_setopt(curl_handle, CURLOPT_URL, query);
   else {
-      fullUrlStr = malloc(strlen(query) + sizeof server + 1);
+      fullUrlStr = malloc(strlen(query) + strlen(server) + 1);
       strcpy(fullUrlStr, server);
       strcat(fullUrlStr, "/");
       strcat(fullUrlStr, query);
       curl_easy_setopt(curl_handle, CURLOPT_URL, fullUrlStr);
+#ifdef DEBUG
+      printf("Opening url: %s\n", fullUrlStr);
+#endif  
   }
 
   /* send all data to this function  */
@@ -277,7 +308,7 @@ int main(int argc, char *argv[])
      * Do something nice with it!
      */
 
-    // printf("%lu bytes retrieved\n", (unsigned long)chunk.size);
+    /* printf("%lu bytes retrieved\n", (unsigned long)chunk.size); */
 
     /* we have full received document, so recode it */
     perform_parse_and_coloring(&chunk);
