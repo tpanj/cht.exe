@@ -63,6 +63,8 @@ sudo cp ./cht /usr/local/bin/ # "install" it
 ## External sources
 * https://github.com/tapio/rlutil for cross platform console coloring
 * https://github.com/Malvineous/cfgpath for managing config files
+* https://github.com/skeeto/optparse adding getopt alternative for parsing args
+* https://github.com/tpanj/sccp reading config files
 ------------------
 
 # TODO:

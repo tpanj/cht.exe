@@ -31,7 +31,6 @@ int str_split(char const *str, char *key, char *value) {
 	}
 	*key='\0';
 	*value='\0';
-
 	return 0;
 }
 
@@ -55,7 +54,7 @@ char *normalize(char *str)
 {
 	char *end;
 	char quot;
-	if (quot=((unsigned char)*str));
+	if ((quot=((unsigned char)*str)));
 	end = str + strlen(str) - 1;
 	if (quot == ((unsigned char)*end)) 
 		if (('"' == quot) || ('\'' == quot)) {
@@ -113,11 +112,7 @@ ConfList * SCparseConf(char *filePath) {
 	head=NULL;
 	one_line = (char*)malloc( SC_MAX_LINE_SIZE * sizeof(char) );
 	while( fgets(one_line, SC_MAX_LINE_SIZE, fin) != NULL ) {
-		int len=strlen(one_line);
-
-
-		int flag=str_split(one_line, key,value);
-
+		str_split(one_line, key,value);
 		if(strlen(key)>=1&&strlen(value)>=1) {
 			if(head==NULL){
 				strcpy(p1->key, trim(key));
