@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 project( CHT C )
 
 add_definitions(-DCURL_STATICLIB=ON)
-add_executable(cht cht.c rlutil.h)
+add_executable(cht cht.c simple_config.c simple_config.h cfgpath.h optparse.h rlutil.h)
 
 find_package (CURL) # use systemwide curl found for dynamic linking only
 
@@ -42,4 +42,6 @@ else (WIN32)
 endif(WIN32)
 
 target_link_libraries(cht ${LIBS})
+
+INSTALL(TARGETS cht DESTINATION bin)
 
