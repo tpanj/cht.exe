@@ -188,6 +188,7 @@ int main(int argc, char *argv[])
   char* host;
   int port = 0;
   char *filePath;
+  FILE *file;
 
   server = malloc(111);
   query  = malloc(256);
@@ -208,9 +209,6 @@ int main(int argc, char *argv[])
       strcpy(server, DEFAULT_SERVER);
   }
   SCfreeCfg(SCcfg);
-#ifdef DEBUG
-  printf("Opening configuration file: %s\n", cfgfile);
-#endif
 
   /* not enough parameters */
   if(argc <2) {
@@ -222,7 +220,15 @@ int main(int argc, char *argv[])
   while ((option = optparse_long(&options, longopts, NULL)) != -1) {
       switch (option) {
       case 'v':
-          fprintf(stderr, "  %s version: " VERSION "      (c) Tadej Panjtar\n", argv[0]);
+          fprintf(stdout, "  %s version: " VERSION "      (c) Tadej Panjtar\n", argv[0]);
+          file = fopen(cfgfile, "r");
+          if (file) {
+            fprintf(stdout, "  Successfully read config from: %s\n", cfgfile);
+            fclose(file);
+          }
+          else {
+            fprintf(stdout, "  Config file: %s do not exits\n", cfgfile);
+          }
           exit(0);
           break;
       case 'T': /* for disabling coloring globally */
