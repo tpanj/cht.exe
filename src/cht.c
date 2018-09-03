@@ -15,7 +15,7 @@
 
 #define DEFAULT_SERVER "cheat.sh"
 
-#define VERSION "0.5"
+#define VERSION "0.6"
 
 enum state_machine {
   NORMAL_PRINTABLE_CHAR,
@@ -156,7 +156,7 @@ void print_usage(f, util_name, srv)
   char *srv;
 {
     fprintf(f, "\nUsage: %s  [options...] <URL>\n(", util_name);
-    fprintf(f, "  without http:// or file:// scheme using %s server)\n", srv);
+    fprintf(f, "  without http:// or file:// scheme using %s server  )\n", srv);
     fprintf(f, "Options:\n");
     fprintf(f, " -Q, --query       space delimetered arguments are parts of query\n");
     fprintf(f, " -T, --no_colors   disabling coloring globally\n");

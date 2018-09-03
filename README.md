@@ -60,7 +60,7 @@ Due to document length it is located separately [here](doc/compile_ms.md)
 ### Simplest & quickest
 ```sh
 sudo apt install build-essential libcurl4-openssl-dev
-gcc -Wall cht.c -lcurl -o cht
+gcc -Wall cht.c simple_config.c -lcurl -o cht
 sudo cp ./cht /usr/local/bin/ # "install" it
 ```
 ### Static & full under control
