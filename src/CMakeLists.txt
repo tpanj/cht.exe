@@ -45,3 +45,22 @@ target_link_libraries(cht ${LIBS})
 
 INSTALL(TARGETS cht DESTINATION bin)
 
+######## QA ########
+enable_testing()
+
+## Local tests
+add_test(OptionNone ${PROJECT_BIN_DIR}/cht)
+set_tests_properties(OptionNone PROPERTIES FAIL_REGULAR_EXPRESSION 
+  "Usage:" WILL_FAIL true) ## exits faiulre so test fails if not set
+
+add_test(OptionVersion ${PROJECT_BIN_DIR}/cht -v)
+set_tests_properties(OptionVersion PROPERTIES PASS_REGULAR_EXPRESSION "version:")
+
+# remote quering
+add_test(RemoteLS ${PROJECT_BIN_DIR}/cht ls)
+set_tests_properties(RemoteLS PROPERTIES PASS_REGULAR_EXPRESSION "target directory")
+
+add_test(RemoteQ_python_reverse_string ${PROJECT_BIN_DIR}/cht -Q python reverse string)
+set_tests_properties(RemoteQ_python_reverse_string 
+  PROPERTIES PASS_REGULAR_EXPRESSION "hello world")
+
