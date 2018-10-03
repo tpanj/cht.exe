@@ -92,4 +92,4 @@ sudo make install # install it to /usr/local/bin
 - [X] complete cmake
 - [X] ~~compile with openssl~~ → postponed since this is not needed for now
 - [ ] complete functionallity all features of the cht.sh command line
-
+- [ ] sorry Mac users, unly tasted on Linux and winXP-10
