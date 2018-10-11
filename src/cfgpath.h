@@ -39,7 +39,7 @@
 #define mkdir _mkdir
 #endif
 
-#ifdef __linux__
+#if defined __linux__ || __HAIKU__
 #include <string.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -71,6 +71,7 @@
  *   Windows: C:\Users\jcitizen\AppData\Roaming\appname.ini
  *   Linux: /home/jcitizen/.config/appname.conf
  *   Mac: /Users/jcitizen/Library/Application Support/appname.conf
+ *   Haiku: /bone/home/config/settings/appname.conf
  *
  * @param out
  *   Buffer to write the path.  On return will contain the path, or an empty
@@ -88,7 +89,7 @@
  */
 static inline void get_user_config_file(char *out, unsigned int maxlen, const char *appname)
 {
-#ifdef __linux__
+#if defined __linux__ || defined __HAIKU__
 	const char *out_orig = out;
 	char *home = getenv("XDG_CONFIG_HOME");
 	unsigned int config_len = 0;
@@ -195,7 +196,7 @@ static inline void get_user_config_file(char *out, unsigned int maxlen, const ch
  */
 static inline void get_user_config_folder(char *out, unsigned int maxlen, const char *appname)
 {
-#ifdef __linux__
+#if defined __linux__ || defined __HAIKU__
 	const char *out_orig = out;
 	char *home = getenv("XDG_CONFIG_HOME");
 	unsigned int config_len = 0;
@@ -313,7 +314,7 @@ static inline void get_user_config_folder(char *out, unsigned int maxlen, const 
  */
 static inline void get_user_data_folder(char *out, unsigned int maxlen, const char *appname)
 {
-#ifdef __linux__
+#if defined __linux__ || defined __HAIKU__
 	const char *out_orig = out;
 	char *home = getenv("XDG_DATA_HOME");
 	unsigned int config_len = 0;
@@ -398,7 +399,7 @@ static inline void get_user_data_folder(char *out, unsigned int maxlen, const ch
  */
 static inline void get_user_cache_folder(char *out, unsigned int maxlen, const char *appname)
 {
-#ifdef __linux__
+#if defined __linux__ || defined __HAIKU__
 	const char *out_orig = out;
 	char *home = getenv("XDG_CACHE_HOME");
 	unsigned int config_len = 0;
