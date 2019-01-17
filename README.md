@@ -9,10 +9,15 @@ See [Motivation](doc/motivation.md) for reasons this software esists.
 
 # Installation
 
-Just copy [downloaded](https://github.com/tpanj/cht.exe/raw/master/bin/cht.exe)
-cht.exe to some of your %PATH% dir to use it from every console.
+Just copy downloaded [`cht.exe`](https://github.com/tpanj/cht.exe/raw/master/bin/cht.exe)
+to some of your %PATH% dir to use it from every console.
 
 e.g.: copy cht.exe c:\windows\system32 (but you need privileges)
+
+or use [`scoop`](https://github.com/lukesampson/scoop) command-line installer for Windows to do it automatically:
+```batch
+scoop install cht
+```
 
 # Usage
 Info about shutdown command
