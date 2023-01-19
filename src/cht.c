@@ -158,7 +158,7 @@ void print_usage(f, util_name, srv)
     fprintf(f, "\nUsage: %s  [options...] <URL>\n(", util_name);
     fprintf(f, "  without http:// or file:// scheme using %s server  )\n", srv);
     fprintf(f, "Options:\n");
-    fprintf(f, " -Q, --query       space delimetered arguments are parts of query\n");
+    fprintf(f, " -Q, --query       space delimited arguments are parts of query\n");
     fprintf(f, " -T, --no_colors   disabling coloring globally\n");
     fprintf(f, "\n");
 }
