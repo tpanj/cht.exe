@@ -58,32 +58,19 @@ cht file:///tmp/saved_file -T
 ![Removing colors](doc/ss_lin1.png)
 
 # Compiling
-## Windows
-Due to document length it is located separately [here](doc/compile_ms.md)
 
+Use [vlang](https://vlang.io)
+
+## Windows
+```
+v src -o cht.exe
+```
 ## Linux
 ### Simplest & quickest
 ```sh
 sudo apt install build-essential libcurl4-openssl-dev
-gcc -Wall cht.c simple_config.c -lcurl -o cht
+v src -o cht
 sudo cp ./cht /usr/local/bin/ # "install" it
-```
-### Static & full under control
-```sh
-sudo apt install build-essential libcurl4-openssl-dev cmake
-```
-* download curl from https://curl.haxx.se/download.html,
-* unpack it to src folder and rename folder to curl (do not leave it like curl-x.y.z)
-```sh
-cd curl
-cmake -DCURL_STATICLIB=ON .
-make libcurl # we need only this mudule
-cd ..
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Release ../src
-make
-sudo make install # install it to /usr/local/bin
 ```
 ## External sources
 * https://github.com/tapio/rlutil for cross platform console coloring
@@ -93,8 +80,11 @@ sudo make install # install it to /usr/local/bin
 ------------------
 
 # TODO:
-- [X] windows compile instructions
+- [ ] Config file
+
+# Deprecated:
+- [X] windows compile instructions [here](doc/compile_ms.md)
 - [X] complete cmake
 - [X] ~~compile with openssl~~ → postponed since this is not needed for now
 - [ ] complete functionallity all features of the cht.sh command line
-- [ ] sorry Mac users, only tasted on Linux and winXP-10
+- [X] sorry Mac users, only tasted on Linux and winXP-10

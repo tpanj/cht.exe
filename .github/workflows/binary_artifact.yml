@@ -1,0 +1,160 @@
+name: Build binary artifacts
+
+on:  
+  push:
+    tags:
+      - '*'
+
+jobs:
+
+  build-linux:
+    runs-on: ubuntu-20.04
+    env:
+      ZIPNAME: cht_linux.zip
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          .github/workflows/retry.sh sudo apt-get update
+          .github/workflows/retry.sh sudo apt-get install --quiet -y build-essential libcurl4 libcurl4-openssl-dev
+      - name: Download V
+        run: |
+          tag="latest"
+          .github/workflows/retry.sh wget https://github.com/vlang/v/releases/$tag/download/v_linux.zip
+          unzip v_linux.zip
+          cd v
+          ./v -version
+      - name: Compile
+        run: |
+          cd v
+          ./v ../src -o ../cht
+      - name: Create ZIP archive
+        run: |
+           mkdir bin
+           mv cht bin
+           zip -r $ZIPNAME bin
+      - name: Create artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux
+          path: ${{ env.ZIPNAME }}           
+
+  build-windows:
+    runs-on: windows-latest
+    env:
+      ZIPNAME: cht_windows.zip
+    timeout-minutes: 5
+    steps:
+    - uses: msys2/setup-msys2@v2
+    - uses: actions/checkout@v4
+    - name: Download V
+      run: |
+        Set-Variable -Name "tag" -Value latest
+        & curl -L https://github.com/vlang/v/releases/$tag/download/v_windows.zip -o v_windows.zip
+        & unzip .\v_windows.zip
+        & cd v
+        & .\v.exe -version
+    - name: Compile
+      run: |
+        cd v
+        .\v.exe ..\src -o ..\cht.exe
+    - name: Create archive
+      shell: msys2 {0}
+      run: |
+           mkdir bin
+           mv cht.exe bin
+           powershell Compress-Archive bin $ZIPNAME          
+    - name: Create artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows
+        path: ${{ env.ZIPNAME }}
+
+  build-macos-x86_64:
+    runs-on: macos-latest
+    env:
+      ZIPNAME: cht_macos_x86_64.zip    
+    timeout-minutes: 5
+    steps:
+    - uses: actions/checkout@v4    
+    - name: Download V
+      run: |
+        tag=latest
+        wget https://github.com/vlang/v/releases/$tag/download/v_macos_x86_64.zip
+        unzip v_macos_x86_64.zip
+        cd v
+        ./v -version
+    - name: Compile
+      run: |
+        cd v
+        ./v ../src -o ../cht
+    - name: Create ZIP archive
+      run: |
+         mkdir bin
+         mv cht bin
+         zip -r $ZIPNAME bin
+    - name: Create artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos_x86_64
+        path: ${{ env.ZIPNAME }}  
+          
+  release:
+    name: Create Github Release
+    needs: [build-linux, build-windows, build-macos-x86_64] #, build-macos-arm64]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get short tag name
+        uses: jungwinter/split@v2
+        id: split
+        with:
+          msg: ${{ github.ref }}
+          separator: /
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.split.outputs._2 }}
+          name: ${{ steps.split.outputs._2 }}
+          commit: ${{ github.sha }}
+#          draft: false
+#          prerelease: false
+
+  publish:
+    needs: [release]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [linux, windows, macos_x86_64] #, macos_arm64]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ matrix.version }}
+          path: ./${{ matrix.version }}
+      - name: Get short tag name
+        uses: jungwinter/split@v2
+        id: split
+        with:
+          msg: ${{ github.ref }}
+          separator: /
+      - name: Get release
+        id: get_release_info
+        uses: leahlundqvist/get-release@v1.3.1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.split.outputs._2 }}
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1.0.2
+        # uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          asset_path: ${{ matrix.version }}/cht_${{ matrix.version }}.zip
+          asset_name: cht_${{ matrix.version }}.zip
+          asset_content_type: application/zip          
