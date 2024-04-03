@@ -2,7 +2,7 @@ import net.http
 import os
 import os.cmdline
 
-const cht_version := '0.7.0'
+const cht_version := '0.7.2'
 
 fn main() {
 
@@ -27,15 +27,28 @@ fn main() {
             '-Q', '--query' {
                     use_query = true
                 }
-            '-l' { domain = cmdline.option(os.args, '-l', '')
+            '-l' {
+                    domain = cmdline.option(os.args, '-l', '')
                     qs += domain.str()
                     qs += '/'
                 }
-            '-v', '--version' { println('cht  version ' + cht_version + '    (c) Tadej Panjtar')
+            '-V', '--version' {
+                    println('cht  version ' + cht_version + '    (c) Tadej Panjtar')
                     exit(0)
                 }
-            else { println ('Unknown option: ' + opt)
+            '-h', '--help' {
+                    println('\nUsage: cht  [options...] <URL>')
+                    println('Options:')
+                    println(' -Q, --query              Space delimited arguments are parts of query (now default)')
+                    println(' -T, --no_colors          Disabling coloring globally')
+                    println(' -V, --version            Show version and exits')
+                    println(' -TA,--force_ansi_colors  Force ANSI colors')
+                    println(' -l                       Domain language set')
                     exit(0)
+                }
+            else {
+                    println('Unknown option: "${opt}"')
+                    exit(1)
                 }
         }
     }
@@ -49,7 +62,7 @@ fn main() {
     }
     first_handeled = true
     }
-    qs = qs.trim('+')
+    qs = qs.trim('+/')
 
     // Dummy usage to get rid of warnings
     if use_query {

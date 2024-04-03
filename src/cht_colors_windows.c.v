@@ -62,7 +62,7 @@ fn println_colored(s string, use_colors bool, force_ansi_colors bool)! {
             if str_first>0 {
                 for i :=0; i<words.len; i++ {
                     print(words[i])
-                    if i < words.len -1 {
+                    if i < words.len -1 && i < escapes.len {
                         C.SetConsoleTextAttribute(hconsole
                           , (info.wAttributes & 0xFFF0) | a2w_color(escapes[i]))
                     }
@@ -70,8 +70,10 @@ fn println_colored(s string, use_colors bool, force_ansi_colors bool)! {
             }
             else {
                 for i :=0; i<words.len; i++ {
-                    C.SetConsoleTextAttribute(hconsole
-                      , (info.wAttributes & 0xFFF0) | a2w_color(escapes[i]))
+                    if i < words.len -1 && i < escapes.len {
+                        C.SetConsoleTextAttribute(hconsole
+                        , (info.wAttributes & 0xFFF0) | a2w_color(escapes[i]))
+                    }
                     print(words[i])
                 }
             }
